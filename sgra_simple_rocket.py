@@ -58,11 +58,11 @@ def calcADotRest(A,t,tVec,phixVec,phiuVec,phipVec,B,C,aux):
     
     return phixt.dot(A) + phiut.dot(Bt) + phipt.dot(C) + auxt
 
-def calcP(sizes,x,u,pi):
+def calcP(sizes,x,u,pi,state):
 
     N = sizes['N']
     phi = calcPhi(sizes,x,u,pi,constants)
-    psi = calcPsi(sizes,x)
+    psi = calcPsi(sizes,x,state)
     dx = ddt(sizes,x)
     #dx = x.copy()
     P = 0.0    
@@ -361,14 +361,14 @@ def grad(sizes,x,u,pi,t,Q0):
     
     return nx,nu,np,lam,mu,Q
 
-def calcStepRest(x,u,pi,A,B,C):
+def calcStepRest(x,u,pi,A,B,C,state):
 
     alfa = 1.0    
     nx = x + alfa * A
     nu = u + alfa * B
     np = pi + alfa * C
     
-    P0 = calcP(sizes,nx,nu,np)
+    P0 = calcP(sizes,nx,nu,np,state)
     print("P =",P0)
 
     P = P0
@@ -376,7 +376,7 @@ def calcStepRest(x,u,pi,A,B,C):
     nx = x + alfa * A
     nu = u + alfa * B
     np = pi + alfa * C
-    nP = calcP(sizes,nx,nu,np)
+    nP = calcP(sizes,nx,nu,np,state)
     cont = 0
     while (nP-P)/P < -.05 and alfa > 1.0e-11 and cont < 5:
         cont += 1
@@ -385,15 +385,15 @@ def calcStepRest(x,u,pi,A,B,C):
         nx = x + alfa * A
         nu = u + alfa * B
         np = pi + alfa * C
-        nP = calcP(sizes,nx,nu,np)
+        nP = calcP(sizes,nx,nu,np,state)
         print("alfa =",alfa,"P =",nP)
         
     return alfa
 
-def rest(sizes,x,u,pi,t):
+def rest(sizes,x,u,pi,t,state):
     print("In rest.")
     
-    P0 = calcP(sizes,x,u,pi)
+    P0 = calcP(sizes,x,u,pi,state)
     print("P0 =",P0)    
     
     # get sizes
@@ -405,7 +405,7 @@ def rest(sizes,x,u,pi,t):
 
     # calculate phi and psi
     phi = calcPhi(sizes,x,u,pi,constants)    
-    psi = calcPsi(sizes,x)
+    psi = calcPsi(sizes,x,state)
 
     # aux: phi - dx/dt
     aux = phi.copy()
@@ -517,7 +517,7 @@ def rest(sizes,x,u,pi,t):
         mu += K[i]*arrayM[i,:]
     
 #    alfa = 1.0#2.0#
-    alfa = calcStepRest(x,u,p,A,B,C)
+    alfa = calcStepRest(x,u,p,A,B,C,state)
     nx = x + alfa * A
     nu = u + alfa * B
     np = pi + alfa * C
@@ -535,8 +535,8 @@ def rest(sizes,x,u,pi,t):
     print("Leaving rest with alfa =",alfa)    
     return nx,nu,np,lam,mu
 
-def plotSol(t,x,u,pi,lam,mu):
-    P = calcP(sizes,x,u,pi)
+def plotSol(t,x,u,pi,lam,mu,state):
+    P = calcP(sizes,x,u,pi,state)
     Q = calcQ(sizes,x,u,pi,lam,mu)
     I = calcI(sizes,x,u,pi,constants)    
     plt.subplot2grid((6,4),(0,0),colspan=4)
@@ -576,7 +576,7 @@ def plotSol(t,x,u,pi,lam,mu):
 # ##################
 
 # declare problem:
-sizes,t,x,u,pi,lam,mu,tol,constants = declProb()
+sizes,t,x,u,pi,lam,mu,tol,constants,state = declProb()
 Grads = calcGrads(sizes,x,u,pi,constants)
 phix = Grads['phix']
 phiu = Grads['phiu']
@@ -584,25 +584,25 @@ psix = Grads['psix']
 psip = Grads['psip']
 
 print("Proposed initial guess:")
-plotSol(t,x,u,pi,lam,mu)
+plotSol(t,x,u,pi,lam,mu,state)
 
 tolP = tol['P']
 tolQ = tol['Q']
 
 # first restoration step:
 
-while calcP(sizes,x,u,pi) > tolP:
-    x,u,pi,lam,mu = rest(sizes,x,u,pi,t)
-    plotSol(t,x,u,pi,lam,mu)
+while calcP(sizes,x,u,pi,state) > tolP:
+    x,u,pi,lam,mu = rest(sizes,x,u,pi,t,state)
+    plotSol(t,x,u,pi,lam,mu,state)
 
 print("\nAfter first rounds of restoration:")
-plotSol(t,x,u,pi,lam,mu)
+plotSol(t,x,u,pi,lam,mu,state)
 
 Q = calcQ(sizes,x,u,pi,lam,mu)
 # first gradient step:
 while Q > tolQ:
-    while calcP(sizes,x,u,pi) > tolP:
-        x,u,pi,lam,mu = rest(sizes,x,u,pi,t)
-        plotSol(t,x,u,pi,lam,mu)
+    while calcP(sizes,x,u,pi,state) > tolP:
+        x,u,pi,lam,mu = rest(sizes,x,u,pi,t,state)
+        plotSol(t,x,u,pi,lam,mu,state)
     x,u,pi,lam,mu,Q = grad(sizes,x,u,pi,t,Q)
-    plotSol(t,x,u,pi,lam,mu)
+    plotSol(t,x,u,pi,lam,mu,state)

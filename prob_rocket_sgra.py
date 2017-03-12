@@ -135,21 +135,23 @@ def calcPhi(sizes,x,u,pi,constants):
     GM = constants['GM']
 
 # calculate r
-    r = numpy.empty(N)
-    for k in range(N):
-        r[k] = r_e + x[k,0]
+    r = r_e + x[:,0]
+    #r = numpy.empty(N)
+    #for k in range(N):
+    #    r[k] = r_e + x[k,0]
     
 # calculate grav
-    grav = numpy.empty(N)
-    for k in range(N):
-        grav[k] = GM/(r[k]**2)
+    grav = GM/r/r
+    #grav = numpy.empty(N)
+    #for k in range(N):
+    #    grav[k] = GM/(r[k]**2)
         
 # calculate phi:
     phi = numpy.empty((N,n))
     
 # example rocket single stage to orbit L=0 D=0     
     phi[:,0] = pi[0] * x[:,1] * numpy.sin(x[:,2])
-    phi[:,1] = (pi[0] * (u[:,1] * Thrust * numpy.cos(u[:,0]))/(x[:,3]) - grav * numpy.sin(x[:,2]))
+    phi[:,1] = pi[0] * ((u[:,1] * Thrust * numpy.cos(u[:,0]))/(x[:,3]) - grav * numpy.sin(x[:,2]))
     for k in range(N):
         if k==0:
             phi[k,2] = 0.0
@@ -220,15 +222,16 @@ def calcGrads(sizes,x,u,pi,constants):
     psip = numpy.array([[0.0],[0.0],[0.0]])
     
     # calculate r
+    r = r_e + x[:,0]
     #r = numpy.empty(N)
     #for k in range(N):
     #    r[k] = r_e + x[k,0]
-    r = r_e + x[:,0]
-    
+        
     # calculate grav
-    grav = numpy.empty(N)
-    for k in range(N):
-        grav[k] = GM/(r[k]**2)
+    grav = GM/r/r
+    #grav = numpy.empty(N)
+    #for k in range(N):
+    #    grav[k] = GM/(r[k]**2)
         
     for k in range(N):
 #       

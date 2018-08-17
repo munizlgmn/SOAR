@@ -10,7 +10,7 @@
 Mu = 100
 #
 # Number of stages
-NStag = 1
+NStag = 2
 #
 # Specific impulse [s]
 Isp = 450
@@ -68,10 +68,10 @@ gamma = 0.0
 AoAmax = 2.0
 #
 # Initial time for attitude maneuver [s]
-tAoA1 = 3.7
+tAoA1 = 1.0
 #
 # Duration of attitude maneuver [s]
-tAoA = 5.0
+tAoA = 10.0
 #
 ###############################################################################
 [trajmods] # Trajectory modifications
@@ -110,10 +110,10 @@ tolP = 1e-8
 tolQ = 1e-4
 #
 # Pi lower limits
-pi_min = 0.0, 0.0, 0.0
+pi_min = 0.0, 0.0, 0.0, 0.0
 #
 # Pi upper limits
-pi_max = None, None, None
+pi_max = None, None, None, None
 #
 # Number of divisions in time array [-]
 N = 501

@@ -35,7 +35,7 @@ class prob(sgra):
             self.dt = dt
             self.t = t
 
-            s = 2
+            s = 1
             addArcs = 0
             p = s
             self.s = s
@@ -86,7 +86,7 @@ class prob(sgra):
             h_initial = 0.0            # km
             V_initial = 1e-6           # km/s
             gamma_initial = numpy.pi/2 # rad
-            m_initial = 20000          # kg
+            m_initial = 25000          # kg
             h_final = 463.0            # km
             V_final = numpy.sqrt(GM/(r_e+h_final))#7.633   # km/s
             gamma_final = 0.0 # rad
@@ -174,7 +174,7 @@ class prob(sgra):
                 for arc in range(s):
                     for line in range(N):
                         x[line,0,arc] = h_final*numpy.sin(0.5*numpy.pi*t_complete[line,arc])
-                        x[line,1,arc] = V_final*numpy.sin(numpy.pi*t_complete[line,arc]/2)
+                        x[line,1,arc] = V_final*numpy.sin(numpy.pi*t_complete[line,arc]/2)+V_initial
                         x[line,2,arc] = (numpy.pi/2)*(numpy.exp(-(t_complete[line,arc]**2)/0.017))#+0.06419
                         x[line,3,arc] = m_initial*((0.7979* \
                                          numpy.exp(-(t_complete[line,arc]**2)/0.02))+ \
@@ -200,9 +200,9 @@ class prob(sgra):
                 t_flip_shaped = numpy.flipud(numpy.reshape(t,(N,1)))
                 t_flip_matrix = t_flip_shaped*numpy.ones((N,s))
                 x[:,0,:] = h_final*t_matrix
-                x[:,1,:] = V_final*t_matrix
+                x[:,1,:] = V_final*t_matrix + V_initial*numpy.ones((N,s))
                 x[:,2,:] = gamma_initial*t_flip_shaped
-                x[:,3,:] = (m_initial)*t_flip_shaped
+                x[:,3,:] = (m_initial-self.mPayl)*t_flip_shaped + self.mPayl*numpy.ones((N,s))
 #                x[:,0,:] = (numpy.pi/4)*numpy.ones((N,s))
 #                x[:,1,:] = V_final*numpy.ones((N,s))
 #                x[:,2,:] = (numpy.pi/4)*(numpy.ones((N,s)))
@@ -1999,7 +1999,6 @@ class prob(sgra):
 
         # Plot orbit in green over the same range as the Earth shown
         # (and a little bit futher)
-
         sigVec = numpy.arange(f-1.2*sigma,f+.2*sigma,.01)
         # shifting angle
         sh = sigma - f - .5*numpy.pi
